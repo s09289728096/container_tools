@@ -1,0 +1,24 @@
+# Import Ubuntu image to Docker
+FROM ubuntu:20.04
+
+# Fix timezone selection issue
+ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
+
+# Install lists
+RUN apt-get update && apt-get install -y \
+    tzdata build-essential clang flex g++ gawk cpio bc python3-setuptools swig python3-dev \
+	gettext git sudo libncurses5-dev libncursesw5-dev libssl-dev python python3 python3-distutils \
+    rsync unzip zlib1g-dev pkg-config vim tree net-tools wireless-tools wget bison \
+	apt-file uuid-dev meson mingw-w64 glslang-dev glslang-tools gcc-multilib \
+   	iputils-ping
+#gcc-9-mipsel-linux-gnu
+
+# Downloading and installing binary
+RUN ln -fs /bin/bash /bin/sh
+
+# Shares Volume
+#VOLUME ["docker"]
+
+# USER
+#RUN groupadd -r dockeruser && useradd -r -g dockeruser dockeruser
+#USER dockeruser

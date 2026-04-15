@@ -1,0 +1,16 @@
+# Import Ubuntu image to Docker
+FROM ubuntu:16.04
+
+# Shares Volume
+#VOLUME ["docker"]
+
+# Install lists
+RUN apt-get update && apt-get install -y \
+    build-essential clang flex g++ gawk gcc-multilib gettext git libncurses5-dev libssl-dev \
+    python3 rsync unzip zlib1g-dev pkg-config vim tree net-tools wireless-tools wget \
+	iputils-ping
+
+# Downloading and installing binary
+
+#USER
+#USER elwin

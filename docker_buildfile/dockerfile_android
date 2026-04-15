@@ -1,0 +1,20 @@
+FROM openjdk:8
+
+# Install required packages
+RUN apt-get update && apt-get install -y wget unzip
+
+# Download and install Android SDK
+RUN wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip -O sdk-tools-linux.zip && \
+    mkdir -p /usr/local/android-sdk && \
+    unzip sdk-tools-linux.zip -d /usr/local/android-sdk && \
+    rm sdk-tools-linux.zip
+
+# Set environment variables
+ENV ANDROID_HOME /usr/local/android-sdk
+ENV PATH $ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+
+# Accept licenses
+RUN yes | sdkmanager --licenses
+
+# Install essential SDK packages
+RUN sdkmanager "platform-tools" "platforms;android-29" "build-tools;29.0.3"
