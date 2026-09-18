@@ -12,7 +12,7 @@ usage() {
     echo "  ${0##*/} [--engine docker|podman] IMAGE [COMMAND [ARG...]]"
     echo '    Start an container.'
     echo '    IMAGE accepts a full image reference/ID or a recipe name.'
-    echo '    CONTAINER_WORKSPACE defaults to the current directory, mounted at /workspace.'
+    echo '    CONTAINER_WORKSPACE defaults to the $HOME/workspace, mounted at /workspace.'
 }
 
 list_images() {
@@ -63,7 +63,7 @@ container_hostname=${container_hostname%-}
     container_error "Image label $CONTAINER_RECIPE_LABEL must contain letters or digits to form a hostname: $image"
 
 fakehome=${CONTAINER_FAKEHOME:-$HOME/.local/usr/home}
-workspace=${CONTAINER_WORKSPACE:-$PWD}
+workspace=${CONTAINER_WORKSPACE:-$HOME/workspace}
 [[ -d $fakehome ]] || container_error "Missing fakehome: $fakehome. Run setup.sh install first."
 [[ -d $workspace ]] || container_error "Missing workspace: $workspace"
 fakehome=$(cd -- "$fakehome" && pwd -P)
