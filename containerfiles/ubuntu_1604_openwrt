@@ -1,11 +1,17 @@
 # Import Ubuntu image to Docker
-FROM ubuntu:16.04
+FROM docker.io/library/ubuntu:16.04
+
+LABEL io.container-tools.managed="true" \
+      io.container-tools.recipe="ubuntu_1604_openwrt"
+
+ARG CONTAINER_TIMEZONE=Asia/Taipei
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Shares Volume
 #VOLUME ["docker"]
 
 # Install lists
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y sudo passwd util-linux \
     build-essential clang flex g++ gawk gcc-multilib gettext git libncurses5-dev libssl-dev \
     python3 rsync unzip zlib1g-dev pkg-config vim tree net-tools wireless-tools wget \
 	iputils-ping
@@ -14,3 +20,9 @@ RUN apt-get update && apt-get install -y \
 
 #USER
 #USER elwin
+
+# Initialize the mapped development account and container-local sudo permissions.
+COPY tools/container_entrypoint.sh /usr/local/bin/container-tools-entrypoint
+RUN chmod 755 /usr/local/bin/container-tools-entrypoint
+ENTRYPOINT ["/usr/local/bin/container-tools-entrypoint"]
+CMD ["/bin/bash"]

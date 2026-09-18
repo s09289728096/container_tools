@@ -1,11 +1,17 @@
 # Import Ubuntu image to Docker
-FROM ubuntu:20.04
+FROM docker.io/library/ubuntu:20.04
+
+LABEL io.container-tools.managed="true" \
+      io.container-tools.recipe="ubuntu_2004_openwrt"
+
+ARG CONTAINER_TIMEZONE=Asia/Taipei
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Fix timezone selection issue
- RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
+RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 
 # Install lists
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y sudo passwd util-linux \
     tzdata build-essential clang flex g++ gawk cpio bc python3-setuptools swig python3-dev \
 	gettext git sudo libncurses5-dev libncursesw5-dev libssl-dev python python3 python3-distutils \
     rsync unzip zlib1g-dev pkg-config vim tree net-tools wireless-tools wget bison \
@@ -22,3 +28,9 @@ RUN ln -fs /bin/bash /bin/sh
 # USER
 #RUN groupadd -r dockeruser && useradd -r -g dockeruser dockeruser
 #USER dockeruser
+
+# Initialize the mapped development account and container-local sudo permissions.
+COPY tools/container_entrypoint.sh /usr/local/bin/container-tools-entrypoint
+RUN chmod 755 /usr/local/bin/container-tools-entrypoint
+ENTRYPOINT ["/usr/local/bin/container-tools-entrypoint"]
+CMD ["/bin/bash"]

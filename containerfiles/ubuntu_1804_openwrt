@@ -1,11 +1,17 @@
 # Import Ubuntu image to Docker
-FROM ubuntu:18.04
+FROM docker.io/library/ubuntu:18.04
+
+LABEL io.container-tools.managed="true" \
+      io.container-tools.recipe="ubuntu_1804_openwrt"
+
+ARG CONTAINER_TIMEZONE=Asia/Taipei
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Shares Volume
 #VOLUME ["docker"]
 
 # Install lists
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y sudo passwd util-linux \
     build-essential clang flex g++ gawk gettext git libncurses5-dev libssl-dev \
     python3 rsync unzip zlib1g-dev pkg-config vim tree net-tools wireless-tools wget \
 	iputils-ping uuid-dev libjsoncpp-dev automake gcc-aarch64-linux-gnu gcc-7-aarch64-linux-gnu \
@@ -18,3 +24,9 @@ RUN apt-get update && apt-get install -y \
 
 # Downloading and installing binary
 RUN ln -s  /usr/include/jsoncpp/json/ /usr/include/json
+
+# Initialize the mapped development account and container-local sudo permissions.
+COPY tools/container_entrypoint.sh /usr/local/bin/container-tools-entrypoint
+RUN chmod 755 /usr/local/bin/container-tools-entrypoint
+ENTRYPOINT ["/usr/local/bin/container-tools-entrypoint"]
+CMD ["/bin/bash"]

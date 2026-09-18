@@ -1,7 +1,13 @@
-FROM openjdk:8
+FROM docker.io/library/openjdk:8
+
+LABEL io.container-tools.managed="true" \
+      io.container-tools.recipe="openjdk8_android"
+
+ARG CONTAINER_TIMEZONE=Asia/Taipei
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install required packages
-RUN apt-get update && apt-get install -y wget unzip
+RUN apt-get update && apt-get install -y sudo passwd util-linux wget unzip
 
 # Download and install Android SDK
 RUN wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip -O sdk-tools-linux.zip && \
@@ -18,3 +24,9 @@ RUN yes | sdkmanager --licenses
 
 # Install essential SDK packages
 RUN sdkmanager "platform-tools" "platforms;android-29" "build-tools;29.0.3"
+
+# Initialize the mapped development account and container-local sudo permissions.
+COPY tools/container_entrypoint.sh /usr/local/bin/container-tools-entrypoint
+RUN chmod 755 /usr/local/bin/container-tools-entrypoint
+ENTRYPOINT ["/usr/local/bin/container-tools-entrypoint"]
+CMD ["/bin/bash"]

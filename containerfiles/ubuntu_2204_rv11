@@ -1,11 +1,17 @@
 # Import Ubuntu image to Docker
-FROM ubuntu:22.04
+FROM docker.io/library/ubuntu:22.04
+
+LABEL io.container-tools.managed="true" \
+      io.container-tools.recipe="ubuntu_2204_rv11"
+
+ARG CONTAINER_TIMEZONE=Asia/Taipei
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Fix timezone selection issue
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 
 # Install lists
-sudo apt-get update && sudo apt-get install git ssh make gcc libssl-dev \
+RUN apt-get update && apt-get install -y sudo passwd util-linux git ssh make gcc libssl-dev \
 	liblz4-tool expect expect-dev g++ patchelf chrpath gawk texinfo chrpath \
 	diffstat binfmt-support qemu-user-static live-build bison flex fakeroot \
 	cmake gcc-multilib g++-multilib unzip device-tree-compiler ncurses-dev \
@@ -22,3 +28,9 @@ sudo apt-get update && sudo apt-get install git ssh make gcc libssl-dev \
 # USER
 #RUN groupadd -r dockeruser && useradd -r -g dockeruser dockeruser
 #USER dockeruser
+
+# Initialize the mapped development account and container-local sudo permissions.
+COPY tools/container_entrypoint.sh /usr/local/bin/container-tools-entrypoint
+RUN chmod 755 /usr/local/bin/container-tools-entrypoint
+ENTRYPOINT ["/usr/local/bin/container-tools-entrypoint"]
+CMD ["/bin/bash"]

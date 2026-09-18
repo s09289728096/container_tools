@@ -1,30 +1,51 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-if test "$1" = "1";then
-	UBUNTU_VERSION=1604
-elif test "$1" = "2"; then
-	UBUNTU_VERSION=1804
-elif test "$1" = "3"; then
-	UBUNTU_VERSION=2004
-elif test "$1" = "4"; then
-	UBUNTU_VERSION=2204
-elif test "$1" = "5"; then
-	UBUNTU_VERSION=2404
-else
-	echo "Select the number to build the release version of ubuntu:"
-	echo "  1. ubuntu-1604"
-	echo "  2. ubuntu-1804"
-	echo "  3. ubuntu-2004"
-	echo "  4. ubuntu-2204"
-	echo "  5. ubuntu-2404"
-	exit
-fi
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+source "$ROOT/tools/bin/container_common.sh"
 
-echo "build ubuntu-$UBUNTU_VERSION"
-DOCKERFILE_NAME=dockerfile_$UBUNTU_VERSION
-IMAGE_NAME=ubuntu-$UBUNTU_VERSION
-echo "link dockerfile..."
-rm dockerfile
-ln -s docker_buildfile/$DOCKERFILE_NAME dockerfile
-echo "build image..."
-docker build . -t $IMAGE_NAME
+usage() {
+    echo 'Usage:'
+    echo '  ./setup.sh build --list'
+    echo '    List available recipes; also the default when no recipe is specified.'
+    echo
+    echo '  ./setup.sh build [--engine docker|podman] RECIPE [BUILD_OPTIONS...]'
+    echo '    Build an image using a containerfiles filename or its number in --list.'
+    echo '    Pass BUILD_OPTIONS to the engine build command.'
+    echo '    Engine: --engine > CONTAINER_ENGINE > saved setting > docker (rootless).'
+}
+
+container_parse_engine "$@"
+set -- "${CONTAINER_ARGS[@]}"
+
+shopt -s nullglob
+recipes=()
+for file in "$ROOT"/containerfiles/*; do
+    [[ -f $file ]] && recipes+=("${file##*/}")
+done
+((${#recipes[@]})) || container_error 'No containerfiles found.'
+
+case ${1:-} in
+    -h|--help|help) usage; exit 0 ;;
+    ''|--list|-l)
+        for i in "${!recipes[@]}"; do printf '%2d. %s\n' "$((i + 1))" "${recipes[i]}"; done
+        exit 0 ;;
+esac
+
+selection=$1
+shift
+recipe=
+for i in "${!recipes[@]}"; do
+    if [[ $selection == "${recipes[i]}" || $selection == "$((i + 1))" ]]; then
+        recipe=${recipes[i]}
+        break
+    fi
+done
+[[ -n $recipe ]] || container_error "Unknown recipe: $selection. Use --list."
+container_engine_init
+image=${CONTAINER_IMAGE:-$(container_default_image "$recipe")}
+printf 'Building %s with %s from %s\n' "$image" "$CONTAINER_ENGINE" "$recipe"
+exec "$CONTAINER_ENGINE" build "$@" \
+    --build-arg "CONTAINER_TIMEZONE=${CONTAINER_TIMEZONE:-Asia/Taipei}" \
+    --label "$CONTAINER_LABEL=true" \
+    --file "$ROOT/containerfiles/$recipe" --tag "$image" "$ROOT"
