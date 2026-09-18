@@ -1,0 +1,24 @@
+# Import Ubuntu image to Docker
+FROM ubuntu:22.04
+
+# Fix timezone selection issue
+RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
+
+# Install lists
+sudo apt-get update && sudo apt-get install git ssh make gcc libssl-dev \
+	liblz4-tool expect expect-dev g++ patchelf chrpath gawk texinfo chrpath \
+	diffstat binfmt-support qemu-user-static live-build bison flex fakeroot \
+	cmake gcc-multilib g++-multilib unzip device-tree-compiler ncurses-dev \
+	libgucharmap-2-90-dev bzip2 expat gpgv2 cpp-aarch64-linux-gnu libgmp-dev \
+	libmpc-dev bc python-is-python3 python2 gettext libc6-dev libncurses-dev rsync
+
+# Downloading and installing binary
+#RUN ln -fs /bin/bash /bin/sh
+#RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Shares Volume
+#VOLUME ["docker"]
+
+# USER
+#RUN groupadd -r dockeruser && useradd -r -g dockeruser dockeruser
+#USER dockeruser
