@@ -8,8 +8,9 @@ Docker rootful／Podman rootless 的 image 建置與容器工具。Docker 預設
 
 ```bash
 ./setup.sh install
-export PATH="$HOME/.local/bin:$PATH"
 ```
+
+`setup.sh install` 會自動將 `~/.local/bin` 加入 `~/.bashrc`；重新開啟 Bash 後即可直接使用工具。
 
 ## 設定預設引擎
 

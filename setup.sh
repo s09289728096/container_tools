@@ -6,6 +6,7 @@ source "$ROOT/tools/bin/container_common.sh"
 BIN_DIR=$HOME/.local/bin
 FAKEHOME=$HOME/.local/usr/home
 STATE_DIR=${XDG_STATE_HOME:-$HOME/.local/state}/container-tools/installed
+BASHRC=$HOME/.bashrc
 TEMP_FILE=
 trap '[[ -z $TEMP_FILE ]] || rm -f -- "$TEMP_FILE"' EXIT
 
@@ -91,11 +92,16 @@ if [[ $action == install ]]; then
         target=$FAKEHOME/${source##*/}
         [[ -e $target || -L $target ]] || cp -- "$source" "$target"
     done
+    if [[ ! -f $BASHRC ]] || ! grep -Fqx 'export PATH="$HOME/.local/bin:$PATH"' "$BASHRC"; then
+        if [[ -s $BASHRC && $(tail -c 1 "$BASHRC") != $'\n' ]]; then
+            printf '\n' >> "$BASHRC"
+        fi
+        printf '%s\n' \
+            '# Added by docker_env setup.sh install.' \
+            'export PATH="$HOME/.local/bin:$PATH"' >> "$BASHRC"
+        printf 'Updated shell PATH: %s\n' "$BASHRC"
+    fi
     printf 'Installed scripts: %s\nContainer home: %s\n' "$BIN_DIR" "$FAKEHOME"
-    case :$PATH: in
-        *:"$BIN_DIR":*) ;;
-        *) echo 'Add to your shell configuration: export PATH="$HOME/.local/bin:$PATH"' ;;
-    esac
     echo ''
     echo 'Run: goto_container.sh --list'
 else
