@@ -60,9 +60,7 @@ container_engine_init() {
             container_error 'Cannot access Podman. Check the rootless runtime configuration.'
         [[ $info == true ]] || container_error 'Podman must run rootless, without sudo.'
     else
-        info=$(docker info --format '{{json .SecurityOptions}}') ||
-            container_error 'Cannot access Docker. Start rootless Docker or set CONTAINER_DOCKER_HOST to its socket.'
-        [[ $info == *\"name=rootless\"* ]] ||
-            container_error 'Docker must use a rootless daemon. Check CONTAINER_DOCKER_HOST.'
+        docker info >/dev/null 2>&1 ||
+            container_error 'Cannot access Docker. Start the system Docker daemon or set CONTAINER_DOCKER_HOST to its socket.'
     fi
 }

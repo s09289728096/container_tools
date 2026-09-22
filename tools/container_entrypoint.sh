@@ -11,7 +11,7 @@ command -v sudo >/dev/null || fail 'sudo is missing; rebuild this image with set
 export HOME=/home/container SHELL=/bin/bash
 
 if [[ $uid == 0 ]]; then
-    # Rootless Docker: namespace root is the host user, not host root.
+    # Rootful Docker keeps the initialization process as container root.
     export USER=root LOGNAME=root
 else
     group_entry=$(getent group "$gid" || true)

@@ -12,7 +12,7 @@ usage() {
     echo '  ./setup.sh build [--engine docker|podman] RECIPE [BUILD_OPTIONS...]'
     echo '    Build an image using a containerfiles filename or its number in --list.'
     echo '    Pass BUILD_OPTIONS to the engine build command.'
-    echo '    Engine: --engine > CONTAINER_ENGINE > saved setting > docker (rootless).'
+    echo '    Engine: --engine > CONTAINER_ENGINE > saved setting > docker (rootful).'
 }
 
 container_parse_engine "$@"

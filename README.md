@@ -1,6 +1,6 @@
 # Container tools
 
-Docker／Podman rootless 的 image 建置與容器工具。請先設定好 rootless 引擎，以下主機端指令以一般使用者執行。
+Docker rootful／Podman rootless 的 image 建置與容器工具。Docker 預設使用 system daemon（`/var/run/docker.sock`），以下主機端指令以一般使用者執行。
 
 ## 安裝／更新工具
 
@@ -32,6 +32,12 @@ export PATH="$HOME/.local/bin:$PATH"
 ./setup.sh build ubuntu_2204_rv11
 ./setup.sh build 1
 ./setup.sh build ubuntu_2204_rv11 --no-cache
+```
+
+Docker 預設使用 `/var/run/docker.sock`；若 daemon 使用其他 socket，可設定：
+
+```bash
+CONTAINER_DOCKER_HOST=unix:///path/to/docker.sock ./setup.sh build 8
 ```
 
 預設 image 名稱為 `<主機使用者名稱>/<recipe 檔名>:latest`（例如 `elwin/ubuntu_2204_rv11:latest`），也可自訂：
