@@ -12,7 +12,7 @@ usage() {
     echo "  ${0##*/} [--engine docker|podman] IMAGE [COMMAND [ARG...]]"
     echo '    Start an container.'
     echo '    IMAGE accepts a full image reference/ID or a recipe name.'
-    echo '    CONTAINER_WORKSPACE defaults to the $HOME/workspace, mounted at /workspace.'
+    echo '    CONTAINER_WORKSPACE defaults to the $HOME/workspace, mounted at $HOME/workspace.'
 }
 
 list_images() {
@@ -90,14 +90,14 @@ if [[ $CONTAINER_ENGINE == podman ]]; then
     container_gid=$(id -g)
     container_user=$(id -un)
 else
-    # Rootless Docker maps container root to the invoking host user.
+    # Rootful Docker runs the initialization process as container root.
     args+=(--user 0:0)
     container_uid=0
     container_gid=0
     container_user=root
 fi
 args+=(--mount "type=bind,src=$fakehome,dst=/home/container"
-       --mount "type=bind,src=$workspace,dst=/workspace"
+       --mount "type=bind,src=$workspace,dst=$HOME/workspace"
        --workdir /workspace --hostname "$container_hostname"
        --entrypoint /usr/local/bin/container-tools-entrypoint
        --env "CONTAINER_UID=$container_uid" --env "CONTAINER_GID=$container_gid"
