@@ -57,7 +57,7 @@ goto_container.sh "$(id -un)/ubuntu_2204_rv11:latest"
 goto_container.sh my-rv11:dev bash -c 'id; pwd'
 ```
 
-預設進入 Bash，將家目錄的 'workspace' 掛載至 `/workspace`，fakehome 掛載至 `/home/container`。退出後移除容器，保留掛載目錄的資料。
+預設進入 Bash，將家目錄的 'workspace' 掛載至 `/workspace`，fakehome 掛載至 `/home/$USER`。退出後移除容器，保留掛載目錄的資料。
 
 ## 臨時切換引擎
 

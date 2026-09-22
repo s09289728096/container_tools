@@ -8,7 +8,9 @@ uid=${CONTAINER_UID:-0}
 gid=${CONTAINER_GID:-0}
 [[ $uid =~ ^[0-9]+$ && $gid =~ ^[0-9]+$ ]] || fail 'CONTAINER_UID/GID must be numeric.'
 command -v sudo >/dev/null || fail 'sudo is missing; rebuild this image with setup.sh build.'
-export HOME=/home/container SHELL=/bin/bash
+home=${CONTAINER_HOME:-/home/${CONTAINER_USER:-container-$uid}}
+[[ $home == /home/* ]] || fail 'CONTAINER_HOME must be under /home.'
+export HOME=$home SHELL=/bin/bash
 
 if [[ $uid == 0 ]]; then
     # Rootful Docker keeps the initialization process as container root.
@@ -22,7 +24,14 @@ else
     fi
     passwd_entry=$(getent passwd "$uid" || true)
     if [[ -n $passwd_entry ]]; then
-        account=${passwd_entry%%:*}
+        existing_account=${passwd_entry%%:*}
+        account=${CONTAINER_USER:-$existing_account}
+        [[ $account =~ ^[a-z_][a-z0-9_-]*[$]?$ ]] || account=$existing_account
+        if [[ $account != "$existing_account" ]]; then
+            getent passwd "$account" >/dev/null &&
+                fail "Account name already exists: $account"
+            usermod --login "$account" "$existing_account"
+        fi
         # Do not move or chown the bind-mounted home.
         usermod --gid "$gid" --home "$HOME" --shell /bin/bash "$account"
     else

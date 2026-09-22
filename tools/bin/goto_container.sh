@@ -90,19 +90,22 @@ if [[ $CONTAINER_ENGINE == podman ]]; then
     container_gid=$(id -g)
     container_user=$(id -un)
 else
-    # Rootful Docker runs the initialization process as container root.
+    # Rootful Docker initializes the account as root, then the entrypoint
+    # drops the requested command to the invoking host UID/GID.
     args+=(--user 0:0)
-    container_uid=0
-    container_gid=0
-    container_user=root
+    container_uid=$(id -u)
+    container_gid=$(id -g)
+    container_user=$(id -un)
 fi
-args+=(--mount "type=bind,src=$fakehome,dst=/home/container"
+container_home=/home/$container_user
+args+=(--mount "type=bind,src=$fakehome,dst=$container_home"
        --mount "type=bind,src=$workspace,dst=$HOME/workspace"
-       --workdir /workspace --hostname "$container_hostname"
+       --workdir $PWD --hostname "$container_hostname"
        --entrypoint /usr/local/bin/container-tools-entrypoint
        --env "CONTAINER_UID=$container_uid" --env "CONTAINER_GID=$container_gid"
        --env "CONTAINER_USER=$container_user"
-       --env HOME=/home/container --env "USER=$container_user"
+    --env "CONTAINER_HOME=$container_home"
+    --env "HOME=$container_home" --env "USER=$container_user"
        --env "LOGNAME=$container_user"
        --env "TZ=${CONTAINER_TIMEZONE:-Asia/Taipei}")
 [[ -z ${TERM:-} ]] || args+=(--env "TERM=$TERM")
