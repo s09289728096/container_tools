@@ -16,12 +16,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 
 # Install lists
-#  - setpriv for the entrypoint: its own package on 18.04 (16.04 has none)
-#  - gcc-multilib/g++-multilib + lib32z1: 32-bit runtime for arm-2013.11 (cc1 needs libz.so.1)
-#  - squashfs-tools, e2fsprogs, dosfstools, mtd-utils, u-boot-tools: image tools in scripts/mkfs*.sh
 RUN dpkg --add-architecture i386 && apt-get update && apt-get install -y sudo passwd util-linux setpriv \
 	tzdata build-essential gcc-multilib g++-multilib lib32z1 lib32stdc++6 libc6-i386 \
-	zlib1g-dev libncurses5-dev libssl-dev flex bison gawk bc texinfo gettext autoconf automake \
+	zlib1g-dev libncurses5-dev libssl1.0-dev flex bison gawk bc texinfo gettext intltool autoconf automake \
 	libtool pkg-config patch perl tar cpio unzip zip xz-utils bzip2 lzop wget rsync file git \
 	python python3 squashfs-tools e2fsprogs dosfstools mtd-utils device-tree-compiler \
 	u-boot-tools fakeroot vim tree net-tools iputils-ping
